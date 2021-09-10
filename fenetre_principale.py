@@ -20,7 +20,6 @@ prod_ani = 0  # utilisé pour ajouter des productions animales
 sau_vente = 0  # utilisé pour afficher la surface culture de vente
 sau_fourrage = 0  # utilisé pour afficher la surface fourragère
 sau_total = 0  # utilisé pour afficher la surface total
-crea_tableau = True
 
 CS_charges = {}
 CS_coefficient = {}
@@ -66,7 +65,7 @@ repartition = [Foncier, Foncier, Foncier, Foncier, Batiment, Batiment, Batiment,
 # data_CS = [14497, 1922, 869, 0, 0, 2163, 0, 4465, 6778, 9365, -6289, 0, 35165, 11081, 0, 15767, 4865,
 #            6407, 3797, 255, 1196, 2373, 0, 589, 197, 16, 0, 0, 1302, 15573, 0, 0, 0]
 
-NOM_PRODUCTION = []
+# NOM_PRODUCTION = []
 
 ########################################################################################################################
                                 ### FONCTIONS NECESSAIRES POUR LA PAGE DESCRIPTIF ###
@@ -166,38 +165,44 @@ def somme_total(prod):
     return somme_foncier(prod) + somme_batiment(prod) + somme_mo(prod) + somme_mecanisation(prod) + somme_autres_cs(prod) + somme_charges_fi(prod) + somme_ammortissement(prod)
 
 # fonction affichage de ligne
-def ligne_cs(nom_prod, nom_cs_key):
-    """
-    Fonction qui permet d'afficher la répartition pour chaque production et types de charges sur une ligne
-    Ajout d'une case à cocher pour
-    :param nom_prod: Nom de la production
-    :param nom_cs_key: Nom de clé utilisé
-    :return: Renvoi la ligne contenant le couple (production, nom de la clé)
-    """
-    ligne = []
-    for prod in nom_prod:
-        if nom_cs_key in NOM_CS_CATEGORIE:
-            ligne += [sg.Text('0', size=(len(prod), 1), justification='c', key=(prod, nom_cs_key), background_color='black', text_color='white')]
-        else:
-            ligne += [sg.Input('0', size=(len(prod), 1), justification='c', key=(prod, nom_cs_key), disabled=True, text_color='black', enable_events=True)]
-
-    if nom_cs_key not in NOM_CS_CATEGORIE:
-        ligne += [sg.Checkbox('', enable_events=True, pad=((0, 0), (0, 0)), key=('modif', nom_cs_key))]
-
-    return ligne
+# def ligne_cs(nom_prod, nom_cs_key):
+#     """
+#     Fonction qui permet d'afficher la répartition pour chaque production et types de charges sur une ligne
+#     Ajout d'une case à cocher pour
+#     :param nom_prod: Nom de la production
+#     :param nom_cs_key: Nom de clé utilisé
+#     :return: Renvoi la ligne contenant le couple (production, nom de la clé)
+#     """
+#     ligne = []
+#     for prod in nom_prod:
+#         if nom_cs_key in NOM_CS_CATEGORIE:
+#             ligne += [sg.Text('0', size=(len(prod), 1), justification='c', key=(prod, nom_cs_key), background_color='black', text_color='white')]
+#         else:
+#             ligne += [sg.Input('0', size=(len(prod), 1), justification='c', key=(prod, nom_cs_key), disabled=True, text_color='black', enable_events=True)]
+#
+#     # if nom_cs_key not in NOM_CS_CATEGORIE:
+#     #     ligne += [sg.Checkbox('', enable_events=True, pad=((0, 0), (0, 0)), key=('modif', nom_cs_key))]
+#
+#     return ligne
 
 # création de la colonne nom CS et saisie des CS
-def ligne_nom_cs(nom_cs, nom_cs_key):
-    ligne = []
-    if nom_cs_key in NOM_CS_CATEGORIE:
-        ligne += [sg.Text(nom_cs, size=(33, 1), justification='l', background_color='black'), sg.Text(key=nom_cs_key, size=(15, 1), background_color='black', justification='c')]
-    else:
-        ligne += [sg.Text(nom_cs, size=(33, 1), justification='l'), sg.Input(key=nom_cs_key, size=(15, 1), enable_events=True, justification='c')]
-
-    ligne += [sg.Text('', size=(5, 1))]
-
-    return ligne
-
+# def ligne_nom_cs(nom_cs, nom_cs_key):
+#     ligne = []
+#     if nom_cs_key in NOM_CS_CATEGORIE:
+#         ligne += [sg.Text(nom_cs, size=(33, 1), justification='l', background_color='black'), sg.Text(key=nom_cs_key, size=(15, 1), background_color='black', justification='c')]
+#     else:
+#         ligne += [sg.Text(nom_cs, size=(33, 1), justification='l'), sg.Input(key=nom_cs_key, size=(15, 1), enable_events=True, justification='c')]
+#
+#     ligne += [sg.Text('', size=(5, 1))]
+#
+#     return ligne
+#
+# # création du tableau des CS automatique
+# def tableau_CS(NOM_PRODUCTION, NOM_CS_KEY):
+#     entete = [sg.Text(nom_prod, size=(len(nom_prod), 2), justification='c') for nom_prod in NOM_PRODUCTION]
+#     col_CS_prod = [ligne_cs(NOM_PRODUCTION, nom_cs_key) for nom_cs_key in NOM_CS_KEY]
+#
+#     return [entete] + col_CS_prod
 
 # Fonction de test des valeurs
 def test_valeur(valeur):
@@ -274,7 +279,7 @@ window_cs = [sg.Tab('Charges de structure', [[sg.Col([col_CS + col_CS_prod], scr
 # affichage des différentes pages
 ########################################################################################################################
 
-window = sg.Window('Principale', [[sg.TabGroup([window_descriptif + window_cs], key='TABGROUP', enable_events=crea_tableau)]], resizable=True, finalize=True)
+window = sg.Window('Principale', [[sg.TabGroup([window_descriptif + window_cs], key='TABGROUP')]], resizable=True, finalize=True)
 # window['TABCS'].update(expand_y=True, expand_x=True)
 # window['TABGROUP'].update(expand_y=True, expand_x=True)
 
@@ -449,14 +454,9 @@ while True:
     ####################################################################################################################
                                                     # partie de test #
     ####################################################################################################################
-    for i in saisie['animaux']:
-        NOM_PRODUCTION.append(i[0])
-    if event == 'TABGROUP':
-        if NOM_PRODUCTION:
-            entete = [sg.Text(nom_prod, size=(len(nom_prod), 2), justification='c') for nom_prod in NOM_PRODUCTION]
-            col_CS_prod = [ligne_cs(NOM_PRODUCTION, nom_cs_key) for nom_cs_key in NOM_CS_KEY]
-            window.extend_layout(window['col_cs_prod'], [entete] + col_CS_prod)
 
-
+    NOM_PRODUCTION = [nom[0] for nom in saisie['animaux']]
+    print(NOM_PRODUCTION)
+    # window.extend_layout(window['col_cs_prod'], tableau_CS(NOM_PRODUCTION, NOM_CS_KEY))
 
 window.close()

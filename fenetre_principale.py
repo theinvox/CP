@@ -164,45 +164,6 @@ def somme_ammortissement(prod):
 def somme_total(prod):
     return somme_foncier(prod) + somme_batiment(prod) + somme_mo(prod) + somme_mecanisation(prod) + somme_autres_cs(prod) + somme_charges_fi(prod) + somme_ammortissement(prod)
 
-# fonction affichage de ligne
-# def ligne_cs(nom_prod, nom_cs_key):
-#     """
-#     Fonction qui permet d'afficher la répartition pour chaque production et types de charges sur une ligne
-#     Ajout d'une case à cocher pour
-#     :param nom_prod: Nom de la production
-#     :param nom_cs_key: Nom de clé utilisé
-#     :return: Renvoi la ligne contenant le couple (production, nom de la clé)
-#     """
-#     ligne = []
-#     for prod in nom_prod:
-#         if nom_cs_key in NOM_CS_CATEGORIE:
-#             ligne += [sg.Text('0', size=(len(prod), 1), justification='c', key=(prod, nom_cs_key), background_color='black', text_color='white')]
-#         else:
-#             ligne += [sg.Input('0', size=(len(prod), 1), justification='c', key=(prod, nom_cs_key), disabled=True, text_color='black', enable_events=True)]
-#
-#     # if nom_cs_key not in NOM_CS_CATEGORIE:
-#     #     ligne += [sg.Checkbox('', enable_events=True, pad=((0, 0), (0, 0)), key=('modif', nom_cs_key))]
-#
-#     return ligne
-
-# création de la colonne nom CS et saisie des CS
-# def ligne_nom_cs(nom_cs, nom_cs_key):
-#     ligne = []
-#     if nom_cs_key in NOM_CS_CATEGORIE:
-#         ligne += [sg.Text(nom_cs, size=(33, 1), justification='l', background_color='black'), sg.Text(key=nom_cs_key, size=(15, 1), background_color='black', justification='c')]
-#     else:
-#         ligne += [sg.Text(nom_cs, size=(33, 1), justification='l'), sg.Input(key=nom_cs_key, size=(15, 1), enable_events=True, justification='c')]
-#
-#     ligne += [sg.Text('', size=(5, 1))]
-#
-#     return ligne
-#
-# # création du tableau des CS automatique
-# def tableau_CS(NOM_PRODUCTION, NOM_CS_KEY):
-#     entete = [sg.Text(nom_prod, size=(len(nom_prod), 2), justification='c') for nom_prod in NOM_PRODUCTION]
-#     col_CS_prod = [ligne_cs(NOM_PRODUCTION, nom_cs_key) for nom_cs_key in NOM_CS_KEY]
-#
-#     return [entete] + col_CS_prod
 
 # Fonction de test des valeurs
 def test_valeur(valeur):
@@ -217,6 +178,7 @@ def calcul_unite(prod, indice):
     somme = (float(cle_repartition[prod][0]) * float(cle_repartition[prod][indice])
              - float(cle_repartition[prod][2]) * float(cle_repartition['Cultures de vente'][indice])) / float(cle_repartition[prod][3])
     return round(somme, 2)
+
 
 # importation du fichier de référence pour la répartion des CS
 with open('Reference_repartition_CS.csv', newline='', encoding='utf8') as csvfile:
@@ -246,7 +208,7 @@ sg.theme('BluePurple')  # thème des fenêtres
 ajout = [[sg.Col([[sg.Button('+', key='-B1-', disabled=False), sg.Text("Ajout d'une culture de vente"), sg.Button('+', key='-B2-', disabled=False),
                    sg.Text("Ajout d'une culture fourragère")],
                   [sg.Text()],
-                  [sg.Text("Ajout d'une production animal"), sg.Combo(values=LISTE_ANIMAUX[1:], size=(30, len(LISTE_ANIMAUX[1:])), key='-SELECT_PROD-', readonly=True, enable_events=True),
+                  [sg.Text("Ajout d'une production animal"), sg.Combo(values=LISTE_ANIMAUX[1:], size=(30, len(LISTE_ANIMAUX[1:])), key='-SELECT_PROD-', readonly=True),
                    sg.Button('Ajouter', key='-AJOUTER-', disabled=False)]]),
           sg.Col([[sg.Text(f'Surface totale: {sau_total} ha', key='-SAU_TOT-', size=(40, 1), text_color='white', background_color='blue')],
                   [sg.Text(f'Surface de ventes : {sau_vente} ha', key='-SAU_VENTE-', size=(40, 1), text_color='white', background_color='blue')],
@@ -270,10 +232,30 @@ window_descriptif = [sg.Tab('Coût de production', [[sg.Col(ajout + culture + pr
 ########################################################################################################################
 # page charges de structure
 ########################################################################################################################
-col_CS = [sg.Col([[sg.Text('', size=(1, 2))]] + [ligne_nom_cs(nom_cs, cs_key) for nom_cs, cs_key in zip(NOM_CS, NOM_CS_KEY)])]
-col_CS_prod = [sg.Col([[]], key='col_cs_prod')]
+col_nom_cs = [[sg.Text(size=(1, 2))]]
+for nom_cs, nom_cs_key in zip(NOM_CS, NOM_CS_KEY):
+    if nom_cs_key in NOM_CS_CATEGORIE:
+        col_nom_cs += [[sg.Text(nom_cs, size=(30, 1), justification='l', background_color='black'),
+                        sg.Text(key=nom_cs_key, size=(15, 1), background_color='black', justification='c')]]
+    else:
+        col_nom_cs += [[sg.Text(nom_cs, size=(30, 1), justification='l'),
+                        sg.Input(key=nom_cs_key, size=(17, 1), enable_events=True, justification='c')]]
 
-window_cs = [sg.Tab('Charges de structure', [[sg.Col([col_CS + col_CS_prod], scrollable=False, vertical_scroll_only=True, key='TABCS')]])]
+col_prod = []
+for prod in LISTE_ANIMAUX:
+    crea_prod = [[sg.Text(prod, size=(len(prod), 2), justification='c')]]
+    for nom_cs_key in NOM_CS_KEY:
+        if nom_cs_key in NOM_CS_CATEGORIE:
+            crea_prod += [[sg.Text('0', key=f'{prod}-{nom_cs_key}',
+                                   background_color='black', size=(len(prod), 1), justification='c')]]
+        else:
+            crea_prod += [[sg.Input(key=f'{prod}-{nom_cs_key}', size=(len(prod) + 2, 1), justification='c')]]
+
+    col_prod += [sg.Col(crea_prod, key=f'cs-{prod}', visible=False)]
+
+page = sg.Col([[sg.Col(col_nom_cs)] + [sg.Col([[sg.Text(' ', size=(2, 1))]])] + col_prod], scrollable=True, vertical_scroll_only=False)
+
+window_cs = [sg.Tab('Charges de structure', [[page]])]
 
 ########################################################################################################################
 # affichage des différentes pages
@@ -285,7 +267,7 @@ window = sg.Window('Principale', [[sg.TabGroup([window_descriptif + window_cs], 
 
 while True:
     event, values = window.read()
-    print(event, values)
+    # print(event, values)
 
     if event == sg.WINDOW_CLOSED:
         break
@@ -389,9 +371,9 @@ while True:
 
     # dictionnaire des coefficients pour la pré répartition
     # TODO a revoir en fonction de la répartition des productions
-    for nom_cs, coef in zip(NOM_CS_KEY, repartition):
-        if nom_cs not in NOM_CS_CATEGORIE:
-            CS_coefficient[nom_cs] = coef
+    # for nom_cs, coef in zip(NOM_CS_KEY, repartition):
+    #     if nom_cs not in NOM_CS_CATEGORIE:
+    #         CS_coefficient[nom_cs] = coef
 
     # # modification de la valeur en fonction de la case coché ou non
     # # ajout dans le dictionnaire CS_charges des valeurs saisies ou des valeurs calculées en fonction du coefficient
@@ -455,8 +437,13 @@ while True:
                                                     # partie de test #
     ####################################################################################################################
 
-    NOM_PRODUCTION = [nom[0] for nom in saisie['animaux']]
-    print(NOM_PRODUCTION)
-    # window.extend_layout(window['col_cs_prod'], tableau_CS(NOM_PRODUCTION, NOM_CS_KEY))
+    # NOM_PRODUCTION = [nom[0] for nom in saisie['animaux']]
+    # print(NOM_PRODUCTION)
+    # for prod in NOM_PRODUCTION:
+    #     print(prod)
+    #     if prod in LISTE_ANIMAUX:
+    #         window[f'cs-{prod}'].update(visible=True)
+    #     else:
+    #         window[f'cs-{prod}'].update(visible=False)
 
 window.close()

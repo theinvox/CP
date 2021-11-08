@@ -251,7 +251,7 @@ for prod in LISTE_ANIMAUX:
         else:
             crea_prod += [[sg.Input(key=f'{prod}-{nom_cs_key}', size=(len(prod) + 2, 1), justification='c')]]
 
-    col_prod += [sg.Col(crea_prod, key=f'cs-{prod}', visible=False)]
+    col_prod += [sg.Col(crea_prod, key=f'cs-{prod}', visible=True)]
 
 page = sg.Col([[sg.Col(col_nom_cs)] + [sg.Col([[sg.Text(' ', size=(2, 1))]])] + col_prod], scrollable=True, vertical_scroll_only=False)
 
@@ -437,8 +437,8 @@ while True:
                                                     # partie de test #
     ####################################################################################################################
 
-    # NOM_PRODUCTION = [nom[0] for nom in saisie['animaux']]
-    # print(NOM_PRODUCTION)
+    NOM_PRODUCTION = [nom[0] for nom in saisie['animaux']]
+    print(NOM_PRODUCTION)
     # for prod in NOM_PRODUCTION:
     #     print(prod)
     #     if prod in LISTE_ANIMAUX:
